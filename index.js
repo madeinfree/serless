@@ -4,11 +4,10 @@ const toRegExp = require('path-to-regexp');
 class Serless {
   constructor() {
     this._middlewares = [];
-    this.routerObject = {
+    this._routerObject = {
       GET: {},
       POST: {}
     };
-    this.routerKeys = [];
     this.server = http.createServer(this.serless.bind(this));
     this.get = (url, handler) => this._get(url, handler);
     this.post = (url, handler) => this._post(url, handler);
@@ -38,14 +37,14 @@ class Serless {
       let keys = [];
       let params = {};
       let hasMatch = false;
-      const hasRoute = this.routerObject[url];
+      const hasRoute = this._routerObject[url];
       if (hasRoute && method === hasRoute.method)
         return hasRoute.handler(req, res);
       const split = url.split('/');
       const first = '/' + split[1];
       const len = split.length - 1;
-      for (let o in this.routerObject[method]) {
-        if (this.routerObject[method][o].keyLen === len) {
+      for (let o in this._routerObject[method]) {
+        if (this._routerObject[method][o].keyLen === len) {
           const pattern = toRegExp(o, keys);
           const match = pattern.exec(url);
           if (match) {
@@ -55,7 +54,7 @@ class Serless {
                 match[i] !== undefined ? match[i] : undefined;
             }
             req.params = params;
-            this.routerObject[method][o].handler(req, res);
+            this._routerObject[method][o].handler(req, res);
             break;
           }
         }
@@ -77,21 +76,19 @@ class Serless {
     }
   }
   _get(url, handler) {
-    this.routerObject['GET'][url] = {
+    this._routerObject['GET'][url] = {
       pattern: url,
       handler,
       keyLen: url.split('/').length - 1
     };
-    this.routerKeys.push(url);
     return this;
   }
   _post(url, handler) {
-    this.routerObject['POST'][url] = {
+    this._routerObject['POST'][url] = {
       pattern: url,
       handler,
       keyLen: url.split('/').length - 1
     };
-    this.routerKeys.push(url);
     return this;
   }
 }
