@@ -34,6 +34,7 @@ class Serless {
     const handleResponse = () => {
       let keys = [];
       let params = {};
+      let hasMatch = false;
       const hasRoute = this.routerObject[url];
       if (hasRoute) return hasRoute.handler(req, res);
       const split = url.split('/');
@@ -44,6 +45,7 @@ class Serless {
           const pattern = toRegExp(o, keys);
           const match = pattern.exec(url);
           if (match) {
+            hasMatch = true;
             for (let i = 1; i < match.length; i++) {
               params[keys[i - 1].name] =
                 match[i] !== undefined ? match[i] : undefined;
@@ -53,6 +55,10 @@ class Serless {
             break;
           }
         }
+      }
+      if (!hasMatch) {
+        res.writeHead(404);
+        res.send('Not Found');
       }
     };
 
